@@ -2,8 +2,8 @@ Package: npregfast
 Type: Package
 Title: Nonparametric Estimation of Regression Models with
         Factor-by-Curve Interactions
-Version: 1.0
-Date: 2015-11-05
+Version: 1.0.1
+Date: 2015-11-16
 Author: Marta Sestelo [aut, cre],
     Nora M. Villanueva [aut],
     Javier Roca-Pardinas [aut]
@@ -23,6 +23,6 @@ LazyData: true
 Imports: graphics, stats, utils
 RoxygenNote: 5.0.0
 NeedsCompilation: yes
-Packaged: 2015-11-09 11:20:39 UTC; Sestelo
+Packaged: 2015-11-16 14:08:21 UTC; Sestelo
 Repository: CRAN
-Date/Publication: 2015-11-09 15:28:58
+Date/Publication: 2015-11-16 16:20:30

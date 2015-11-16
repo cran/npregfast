@@ -1,4 +1,4 @@
-
+! para llamar a los generadores de R
 subroutine test_random(y) 
 double precision normrnd, unifrnd, x, y
 call rndstart() 
@@ -29,7 +29,8 @@ integer seed
 
 
 
-call srand(seed)
+!call srand(seed)
+
 h=-1.0
 
 do i=1,n
@@ -515,7 +516,7 @@ deallocate (p0)
 
 cboot=-1
 
-if(seed.ne.-1) call srand(seed)
+!if(seed.ne.-1) call srand(seed)
 
 
 
@@ -824,7 +825,7 @@ end do
 
 
 ! Bootstrap
-if(seed.ne.-1) call srand(seed)
+!if(seed.ne.-1) call srand(seed)
 
 pvalor=0
 do iboot=1,nboot
@@ -1220,7 +1221,7 @@ Cboot=-1.0
 
 if (nboot.gt.0) then
 
-if(seed.ne.-1) call srand(seed)
+!if(seed.ne.-1) call srand(seed)
 
 do iboot=1,nboot
 
