@@ -153,7 +153,7 @@
 #' # summary(fit4)
 #' 
 #' @useDynLib npregfast frfast_
-#' @importFrom stats na.omit
+#' @importFrom stats na.omit runif
 #' @export
 
 
@@ -181,6 +181,7 @@ frfast <- function(formula, data = data, model = "np", h0 = -1.0, h = -1.0,
   if (!is.null(seed)){
     set.seed(seed)
   }
+  
   
   
   ncmax <- 5
@@ -224,6 +225,7 @@ frfast <- function(formula, data = data, model = "np", h0 = -1.0, h = -1.0,
       stop("The specified weights are not correct")
   }  
   
+ 
   
   if(is.null(c2)) c2 <- matrix(as.double(-1.0), ncmax, nf) 
   if(is.null(rankl)){
@@ -238,6 +240,8 @@ frfast <- function(formula, data = data, model = "np", h0 = -1.0, h = -1.0,
   } 
   
   ipredict2 <- 0
+  
+  umatrix <- matrix(runif(n*nboot), ncol = nboot, nrow = n)
   
   frfast  <- .Fortran("frfast_",
                       f = as.integer(f),
@@ -285,7 +289,8 @@ frfast <- function(formula, data = data, model = "np", h0 = -1.0, h = -1.0,
                       predict = array(rep(-1.0), c(kbin, 3, nf)),
                       predictl = array(as.double(-1.0), c(kbin, 3, nf)),
                       predictu = array(as.double(-1.0), c(kbin, 3, nf)),
-                      seed = as.integer(seed)
+                      seed = as.integer(seed),
+                      umatrix = as.double(umatrix)
   )
   
   if(tmodel != 2){

@@ -7,8 +7,9 @@
 \method{plot}{frfast}(x = model, y, fac = NULL, der = NULL,
   points = TRUE, xlab = model$name[2], ylab = model$name[1],
   ylim = NULL, main = NULL, col = "black", CIcol = "black",
-  ablinecol = "red", abline = TRUE, type = "l", CItype = "l", lwd = 2,
-  CIlwd = 1, lty = 1, CIlty = 2, ...)
+  CIlinecol = "transparent", pcol = "grey80", abline = TRUE,
+  ablinecol = "red", lty = 1, CIlty = 2, lwd = 1, CIlwd = 1,
+  cex = 1.4, alpha = 0.2, ...)
 }
 \arguments{
 \item{x}{\code{frfast} object.}
@@ -37,26 +38,17 @@ it is designed for the first or second derivative, respectively.}
 \item{col}{A specification for the default plotting color.}
 
 \item{CIcol}{A specification for the default confidence intervals
-plotting color.}
+plotting color (for the fill).}
 
-\item{ablinecol}{The color to be used for \code{abline}.}
+\item{CIlinecol}{A specification for the default confidence intervals
+plotting color (for the edge).}
+
+\item{pcol}{A specification for the points color.}
 
 \item{abline}{Draw an horizontal line into the plot of the second derivative 
 of the model.}
 
-\item{type}{What type of plot should be drawn. Possible types are,
-\code{p} for points, \code{l} for lines, \code{o} for overplotted, etc. 
-See details in \code{\link{par}}.}
-
-\item{CItype}{What type of plot should be drawn for confidence intervals. 
-Possible types are, \code{p} for points, \code{l} for lines, \code{o} 
-for overplotted.}
-
-\item{lwd}{The line width, a positive number, defaulting to 1.
-See details in \code{\link{par}}.}
-
-\item{CIlwd}{The line width for confidence intervals, a positive number, 
-defaulting to 1.}
+\item{ablinecol}{The color to be used for \code{abline}.}
 
 \item{lty}{The line type. Line types can either be specified as an integer
 (0 = blank, 1 = solid (default), 2 = dashed, 3 = dotted, 4 = dotdash, 
@@ -65,6 +57,18 @@ defaulting to 1.}
 \item{CIlty}{The line type for confidence intervals. Line types can either 
 be specified as an integer (0 = blank, 1 = solid (default), 2 = dashed,
 3 = dotted, 4 = dotdash, 5 = longdash, 6 = twodash).}
+
+\item{lwd}{The line width, a positive number, defaulting to 1.
+See details in \code{\link{par}}.}
+
+\item{CIlwd}{The line width for confidence intervals, a positive number, 
+defaulting to 1.}
+
+\item{cex}{A numerical value giving the amount by which plotting symbols
+should be magnified relative to the default. See details in \code{\link{par}}.}
+
+\item{alpha}{Alpha transparency for overlapping elements expressed 
+as a fraction between 0 (complete transparency) and 1 (complete opacity).}
 
 \item{\ldots}{Other options.}
 }

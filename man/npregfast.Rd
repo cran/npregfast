@@ -17,7 +17,7 @@ and testing processes.
 }
 \details{
 \tabular{ll}{ Package: \tab npregfast\cr Type: \tab Package\cr
-Version: \tab 1.0\cr Date: \tab 2015-11-05\cr License: \tab MIT + file LICENSE\cr}
+Version: \tab 1.2.0\cr Date: \tab 2016-02-10\cr License: \tab MIT + file LICENSE\cr}
 
 \code{npregfast} is designed along lines similar to those of other \code{R} 
 regression packages. The main function of the library is \code{frfast} 
@@ -52,7 +52,10 @@ two levels of the factor. Additionally, with \code{critical()} it is possible
 
 
 For a listing of all routines in the NPRegfast package type:
-\code{library(help="npregfast")}.
+\code{library(help="npregfast")}. 
+
+View a \href{http://sestelo.shinyapps.io/npregfast}{demo Shiny app}
+or see the full \href{https://github.com/sestelo/npregfast}{README} on GitHub.
 }
 \author{
 Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.

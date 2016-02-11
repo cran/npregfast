@@ -53,7 +53,7 @@
 #' allotest(DW ~ RC, data = barnacle, nboot = 100, seed = 130853)
 #' 
 #' @useDynLib npregfast allotest_
-#' @importFrom stats na.omit
+#' @importFrom stats na.omit runif
 #' @export
 
 
@@ -87,6 +87,8 @@ allotest <- function(formula, data = data, nboot = 500, kbin = 200,
     set.seed(seed)
   }
   
+  umatrix <- matrix(runif(n*nboot), ncol = nboot, nrow = n)
+  
   if (is.null(f)) 
     f <- rep(1, n)
   etiquetas <- unique(f)
@@ -109,7 +111,8 @@ allotest <- function(formula, data = data, nboot = 500, kbin = 200,
                     nboot = as.integer(nboot), 
                     seed = as.integer(seed), 
                     T = as.double(-1), 
-                    pvalue = as.double(-1)
+                    pvalue = as.double(-1),
+                    umatrix = as.double(umatrix)
                     )
     
     res[[i]] <- list(statistic = fit$T, pvalue = fit$pvalue)
