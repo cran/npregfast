@@ -4,13 +4,14 @@
 \alias{globaltest}
 \title{Testing the equality of the \emph{M} curves specific to each level}
 \usage{
-globaltest(formula, data = data, der, weights = NULL, nboot = 500,
-  h0 = -1, h = -1, nh = 30, kernel = "epanech", p = 3, kbin = 100,
-  seed = NULL)
+globaltest(formula, data = data, der, smooth = "kernel", weights = NULL,
+  nboot = 500, h0 = -1, h = -1, nh = 30, kernel = "epanech", p = 3,
+  kbin = 100, seed = NULL, cluster = TRUE, ncores = NULL, ...)
 }
 \arguments{
-\item{formula}{An object of class \code{formula}: a sympbolic description
-of the model to be fitted.}
+\item{formula}{An object of class \code{formula}: a sympbolic 
+description of the model to be fitted. The details of model 
+specification are given under 'Details'.}
 
 \item{data}{A data frame or matrix containing the model response variable
 and covariates required by the \code{formula}.}
@@ -19,6 +20,10 @@ and covariates required by the \code{formula}.}
 By default \code{der} is \code{NULL}. If this term is \code{0}, 
 the testing procedures is applied for the estimate. If it is \code{1} or
 \code{2}, it is designed for the first or second derivative, respectively.}
+
+\item{smooth}{Type smoother used: \code{smooth = "kernel"} for local polynomial
+kernel smoothers and \code{smooth = "splines"} for splines using the 
+\code{mgcv} package.}
 
 \item{weights}{Prior weights on the data.}
 
@@ -48,6 +53,22 @@ returns the estimation, first and second derivative.}
 is to be estimated.}
 
 \item{seed}{Seed to be used in the bootstrap procedure.}
+
+\item{cluster}{A logical value. If  \code{TRUE} (default), the
+bootstrap procedure is  parallelized (only for \code{smooth = "splines"}.
+ Note that there are cases 
+(e.g., a low number of bootstrap repetitions) that R will gain in
+performance through serial computation. R takes time to distribute tasks
+across the processors also it will need time for binding them all together
+later on. Therefore, if the time for distributing and gathering pieces
+together is greater than the time need for single-thread computing, it does
+not worth parallelize.}
+
+\item{ncores}{An integer value specifying the number of cores to be used
+in the parallelized procedure. If \code{NULL} (default), the number of cores 
+to be used is equal to the number of cores of the machine - 1.}
+
+\item{\ldots}{Other options.}
 }
 \value{
 The \eqn{T} value and the \eqn{p}-value  are returned. Additionally, 
@@ -82,6 +103,16 @@ rejecting the null hypothesis if \eqn{T > T^{1- \alpha}}, where \eqn{T^p}
 is the empirical \eqn{p}-percentile of \eqn{T} under the null hypothesis. To
 obtain this percentile, we have used bootstrap techniques. See details in 
 references.
+
+Note that the models fitted by \code{globaltest} function are specified 
+in a compact symbolic form. The \~ operator is basic in the formation 
+of such models. An expression of the form \code{y ~ model}  is interpreted as 
+a specification that the response \code{y} is modelled by a predictor 
+specified symbolically by \code{model}. The possible terms consist of a 
+variable name or a variable name and a factor name separated by : operator. 
+Such a term is interpreted as the interaction of the continuous variable and 
+the factor. However, if \code{smooth = "splines"}, the formula is based on the function
+formula.gam of the mgcv package.
 }
 \examples{
 library(npregfast)

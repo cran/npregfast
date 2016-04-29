@@ -8,6 +8,7 @@
 #' @return \code{summary.frfast} computes and returns a list of summary 
 #' information for a fitted \code{frfast} object.
 #' \item{model}{type of model: nonparametric or allometric.}
+#' \item{smooth}{type of smoother: kernel or splines.}
 #' \item{h}{the kernel bandwidth smoothing parameter.}
 #' \item{dp}{degree of the polynomial.}
 #' \item{nboot}{number of bootstrap repeats.}
@@ -66,7 +67,11 @@ summary.frfast <- function(object = model, ...) {
     cat("*********************************************", "\n")
     cat(m, "Model", "\n")
     cat("*********************************************", "\n")
-    if (model$kernel == 1) 
+   
+    
+    if (model$smooth == "kernel"){
+      cat("\nType of nonparametric smoother: ",format(model$smooth), "\n")
+     if (model$kernel == 1) 
       cat("Kernel: Epanechnikov \n")
     if (model$kernel == 2) 
       cat("Kernel: Triangular \n")
@@ -84,22 +89,29 @@ summary.frfast <- function(object = model, ...) {
     cat("", "\n")
     cat("", "\n")
     cat("The number of data is: ", model$n, "\n")
-    
+    }else{
+      cat("\nType of nonparametric smoother: ",format(model$smooth), "\n")
+      cat("Number of bootstrap repeats:", model$nboot, "\n")
+      cat("", "\n")
+      cat("The number of data is: ", model$n, "\n")
+    }
     # cat('The factor's levels are: ',etiquetas<-model$etiquetas, '\n')
     
     nf <- length(model$label)
     if (nf != 1) {
       cat("The factor's levels are: ", etiquetas <- model$label, "\n")
-      for (factor in c(1:nf)) {
-        cat("The number of data for the level", etiquetas[factor], "is:", 
-            length(model$xdata[model$fmod == factor]), "\n")
+      for (factor in 1:nf) {
+        if(model$smooth == "splines") nn <- length(model$xdata[model$fmod == etiquetas[factor]])
+        if(model$smooth == "kernel") nn <- length(model$xdata[model$fmod == factor])
+        cat("The number of data for the level", etiquetas[factor], "is:", nn, "\n")
       }
       cat("", "\n")
       cat("Summaries for the response variable (for each level): ")
       for (factor in c(1:nf)) {
         cat("", "\n")
         cat("Level", etiquetas[factor], ":", "\n")
-        print(summary(model$ydata[model$fmod == factor]))
+        if(model$smooth == "kernel") print(summary(model$ydata[model$fmod == factor]))
+        if(model$smooth == "splines") print(summary(model$ydata[model$fmod == etiquetas[factor]]))
       }
       
     } else {
