@@ -6,6 +6,8 @@
 #' specification are given under 'Details'.
 #'@param data A data frame or matrix containing the model response variable
 #' and covariates required by the \code{formula}.
+#' @param na.action A function which indicates what should happen when the 
+#' data contain 'NA's. The default is 'na.omit'.
 #' @param der Number which determines any inference process. 
 #' By default \code{der} is \code{NULL}. If this term is \code{0}, 
 #' the testing procedures is applied for the estimate. If it is \code{1} or
@@ -99,6 +101,9 @@
 #' data(barnacle)
 #' globaltest(DW ~ RC : F, data = barnacle, der = 1, seed = 130853, nboot = 100)
 #' 
+#' # globaltest(height ~ s(age, by = sex), data = children, 
+#' # seed = 130853, der = 0, smooth = "splines")
+#' 
 #' 
 #' @useDynLib npregfast globaltest_
 #' @importFrom stats na.omit runif
@@ -111,9 +116,11 @@
 
 
 
-globaltest <- function(formula, data = data, der, smooth = "kernel", weights = NULL, 
-                       nboot = 500, h0 = -1, h = -1, nh = 30, kernel = "epanech", p = 3, 
-                       kbin = 100, seed = NULL, cluster = TRUE, ncores = NULL, ...) {
+globaltest <- function(formula, data = data, na.action = "na.omit",
+                       der, smooth = "kernel", weights = NULL, 
+                       nboot = 500, h0 = -1, h = -1, nh = 30, 
+                       kernel = "epanech", p = 3, kbin = 100, seed = NULL, 
+                       cluster = TRUE, ncores = NULL, ...) {
   
   # utils::globalVariables("i") # for the note at checking --as-cran
   # globaltest: no visible binding for global variable 'i'
@@ -171,6 +178,10 @@ globaltest <- function(formula, data = data, der, smooth = "kernel", weights = N
   }
   
   
+  
+  
+  
+  
   if (smooth != "splines") {
     
     ffr <- interpret.frfastformula(formula, method = "frfast")
@@ -179,34 +190,60 @@ globaltest <- function(formula, data = data, der, smooth = "kernel", weights = N
     varnames <- aux[1]
     if (unlist(strsplit(varnames,split = ""))[1] == "s") {
       stop("Argument \"formula\" is wrong specified, see details of
-model specification in 'Details' of the frfast help." )
+           model specification in 'Details' of the frfast help." )
     }
     namef <- aux[2]
     if (length(aux) == 1) {f <- NULL}else{f <- data[ ,namef]}
     newdata <- data
-    data <- na.omit(data[ ,c(ffr$response, varnames)])
-    #newdata <- na.omit(newdata[ ,varnames])
-    n <- nrow(data)
+    data <- data[ ,c(ffr$response, varnames)]
     
-  }else{
-    ffr <- interpret.gam(formula)
-    varnames <- ffr$pred.names[1]
-    if (":" %in% unlist(strsplit(ffr$fake.names,split = ""))) {
-      stop("Argument \"formula\" is wrong specified, see details of
-           model specification in 'Details' of the frfast help." )
-    }
     
-    namef <- ffr$pred.names[2]
-    if (length(ffr$pred.names) == 1) {f <- NULL}else{f <- data[ ,namef]}
-    newdata <- data
-    if (length(ffr$pred.names) == 1) {
-      data <- na.omit(data[ ,c(ffr$response, varnames)])
+    if (na.action == "na.omit"){ # ver la f
+      data <- na.omit(data)
     }else{
-      data <- na.omit(data[ ,c(ffr$response, varnames, namef)])
+      stop("The actual version of the package only supports 'na.omit' (observations are removed 
+           if they contain any missing values)")
     }
     #newdata <- na.omit(newdata[ ,varnames])
     n <- nrow(data)
-  }
+    
+    }else{
+      ffr <- interpret.gam(formula)
+      varnames <- ffr$pred.names[1]
+      if (":" %in% unlist(strsplit(ffr$fake.names,split = ""))) {
+        stop("Argument \"formula\" is wrong specified, see details of
+             model specification in 'Details' of the frfast help." )
+      }
+      if (length(ffr$smooth.spec) == 0) {
+        warning("Argument \"formula\" could be wrong specified without an 's', see details of
+                model specification in 'Details' of the frfast help." )
+      }
+      
+      namef <- ffr$pred.names[2]
+      if (length(ffr$pred.names) == 1) {f <- NULL}else{f <- data[ ,namef]}
+      newdata <- data
+      
+      if (length(ffr$pred.names) == 1) {
+        data <- data[ ,c(ffr$response, varnames)]
+      }else{
+        data <- data[ ,c(ffr$response, varnames, namef)]
+      }
+      
+      if (na.action == "na.omit"){
+        data <- na.omit(data)
+      }else{
+        stop("The actual version of the package only supports 'na.omit' (observations are removed 
+             if they contain any missing values)")
+      }
+      
+      n <- nrow(data)
+      }
+  
+  
+  
+  
+  
+  
   
   
   if (is.null(f)) 
@@ -265,9 +302,10 @@ model specification in 'Details' of the frfast help." )
                            r = as.integer(der), 
                            T = as.double(rep(-1, 1)), 
                            pvalor = as.double(rep(-1, 1)), 
-                           seed = as.integer(seed),
                            #  umatrix = as.double(umatrix)
-                           umatrix = array(umatrix, c(n, nboot))
+                           #seed = as.integer(seed),
+                           umatrix = array(umatrix, c(n, nboot)),
+                           PACKAGE = "npregfast"
     )
     
     if (globaltest$pvalor < 0.05) {
@@ -282,7 +320,7 @@ model specification in 'Details' of the frfast help." )
     # 
   }else{
     
-    mainfun_globaltest <- function(formula, data, weights){
+    mainfun_globaltest <- function(formula, data, weights, ...){
       
       # grid
       xgrid <- seq(min(data[ ,varnames]), max(data[ ,varnames]), length.out = kbin)
@@ -315,7 +353,7 @@ model specification in 'Details' of the frfast help." )
       return(t)
     }
     
-    d <- mainfun_globaltest(formula, data = data, weights = weights)
+    d <- mainfun_globaltest(formula, data = data, weights = weights, ...)
     
     
     

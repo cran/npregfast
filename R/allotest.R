@@ -5,6 +5,8 @@
 #' of the model to be fitted.
 #'@param data A data frame argumment or matrix containing the model response variable
 #' and covariates required by the \code{formula}.
+#' @param na.action A function which indicates what should happen when the 
+#' data contain 'NA's. The default is 'na.omit'.
 #'@param nboot Number of bootstrap repeats.
 #'@param kbin Number of binning nodes over which the function
 #' is to be estimated.
@@ -15,16 +17,17 @@
 #' data can be modelled by an allometric model, was developed.  Therefore,
 #' \code{allotest} tests the null hypothesis of an allometric model taking 
 #' into account the logarithm of the original variable
-#'  (\eqn{X^* = log(X)}{} and \eqn{Y^* =log (Y)}{}). 
+#'  (\eqn{X^* = log(X)} and \eqn{Y^* = log(Y)}). 
+#'  
 #' Based on a general model of the type 
-#' \deqn{Y^*=m(X^*)+\varepsilon}{} 
+#' \deqn{Y^*=m(X^*)+\varepsilon}
 #' the aim here is to test the null hypothesis of an allometric model 
-#' \deqn{H_0 = m(x^*) =  a^*+ b^* x^*}{} 
-#' \eqn{vs.}{} the general hypothesis 
-#' \eqn{H_1}{}, with \eqn{m}{} 
+#' \deqn{H_0 = m(x^*) =  a^*+ b^* x^*}
+#' \eqn{vs.} the general hypothesis 
+#' \eqn{H_1}, with \eqn{m}
 #' being an unknown nonparametric function; or analogously,
-#' \deqn{H_1: m(x^*)= a^*+ b^* x^* + g(x^*)}{}
-#' with \eqn{g(x^*)}{} being an unknown function not equal to zero. 
+#' \deqn{H_1: m(x^*)= a^*+ b^* x^* + g(x^*)}
+#' with \eqn{g(x^*)} being an unknown function not equal to zero. 
 #' 
 #' To implement this test we have used the wild bootstrap.
 #' 
@@ -35,6 +38,7 @@
 #' \item{value}{the p-value of the test.}
 #' 
 #'@author Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
+#'
 #'@references 
 #' Sestelo, M. and Roca-Pardinas, J. (2011). A new approach to estimation of 
 #' length-weight relationship of \eqn{Pollicipes}  \eqn{pollicipes} (Gmelin, 1789)
@@ -50,7 +54,7 @@
 #'@examples
 #' library(npregfast)
 #' data(barnacle)
-#' allotest(DW ~ RC, data = barnacle, nboot = 100, seed = 130853)
+#' allotest(DW ~ RC, data = barnacle, nboot = 50, seed = 130853)
 #' 
 #' @useDynLib npregfast allotest_
 #' @importFrom stats na.omit runif
@@ -60,8 +64,8 @@
 
 
 
-allotest <- function(formula, data = data, nboot = 500, kbin = 200, 
-                     seed = NULL) {
+allotest <- function(formula, data = data, na.action = "na.omit",
+                     nboot = 500, kbin = 200, seed = NULL) {
   
   ffr <- interpret.frfastformula(formula, method = "frfast")
   varnames <- ffr$II[2, ]
@@ -74,8 +78,18 @@ allotest <- function(formula, data = data, nboot = 500, kbin = 200,
     f <- data[, namef]
   }
   newdata <- data
-  data <- na.omit(data[, c(ffr$response, varnames)])
-  newdata <- na.omit(newdata[, varnames])
+  data <- data[, c(ffr$response, varnames)]
+  newdata <- newdata[, varnames]
+  
+  if (na.action == "na.omit") { # ver la f
+    data <- na.omit(data)
+    newdata <- na.omit(newdata)
+  }else{
+    stop("The actual version of the package only supports 'na.omit' (observations are removed 
+         if they contain any missing values)")
+  }
+  
+  
   n <- nrow(data)
   
   #if (is.null(seed)) {
@@ -109,10 +123,11 @@ allotest <- function(formula, data = data, nboot = 500, kbin = 200,
                     n = as.integer(n), 
                     kbin = as.integer(kbin), 
                     nboot = as.integer(nboot), 
-                    seed = as.integer(seed), 
+                   # seed = as.integer(seed),
                     T = as.double(-1), 
                     pvalue = as.double(-1),
-                    umatrix = as.double(umatrix)
+                    umatrix = as.double(umatrix),
+                    PACKAGE = "npregfast"
                     )
     
     res[[i]] <- list(statistic = fit$T, pvalue = fit$pvalue)

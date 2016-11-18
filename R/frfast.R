@@ -10,9 +10,11 @@
 #' specification are given under 'Details'.
 #' @param data A data frame or matrix containing the model response
 #' variable and covariates required by the \code{formula}.
-#' @param model Type model used: \code{model = "np"}  nonparametric
+#' @param na.action A function which indicates what should happen when the 
+#' data contain 'NA's. The default is 'na.omit'.
+#' @param model Type model used: \code{model = "np"} for a nonparametric
 #' regression model, 
-#' \code{model = "allo"} the  allometric model.
+#' \code{model = "allo"}  for an allometric model. See details.
 #' @param smooth Type smoother used: \code{smooth = "kernel"} for local polynomial
 #' kernel smoothers and \code{smooth = "splines"} for splines using the 
 #' \code{mgcv} package.
@@ -72,6 +74,18 @@
 #' Such a term is interpreted as the interaction of the continuous variable and 
 #' the factor. However, if \code{smooth = "splines"}, the formula is based on the function
 #' formula.gam of the mgcv package.
+#' 
+#' According with the \code{model} argument, if \code{model = "np"} the 
+#' estimated regression model will be of the type
+#' 
+#' \deqn{Y = m(X) + e}
+#' being \eqn{m} an smooth and unknown function and \eqn{e}
+#' the regression error with zero mean. If \code{model = "allo"}, users could estimate
+#' the classical allometric model (Huxley, 1924) with a regression curve 
+#' 
+#' \deqn{m(X) = a X^b}
+#' being \eqn{a} and \eqn{b} the parameters of the model.
+#' 
 #' @return An object is returned with the following elements:
 #' \item{x}{Vector of values of the grid points at which model is to 
 #' be estimate.}
@@ -147,10 +161,16 @@
 #' @author Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
 #' 
 #' @references 
+#' Huxley, J. S. (1924). Constant differential growth-ratios and their 
+#' significance. Nature, 114:895--896.
+#' 
 #' Sestelo, M. (2013). Development and computational implementation of 
 #' estimation and inference methods in flexible regression models. 
 #' Applications in Biology, Engineering and Environment. PhD Thesis, Department
 #' of Statistics and O.R. University of Vigo.
+#' 
+#' 
+#' 
 #' 
 #' @examples
 #' library(npregfast)
@@ -191,6 +211,7 @@
 #' # fit4 <- frfast(DW ~ RC : F, data = barnacle, model = "allo", nboot = 100)
 #' # summary(fit4)
 #' 
+#' @useDynLib npregfast, .registration = TRUE
 #' @useDynLib npregfast frfast_
 #' @importFrom stats na.omit runif lm predict quantile
 #' @importFrom mgcv interpret.gam gam predict.gam
@@ -204,7 +225,8 @@
 
 
 
-frfast <- function(formula, data = data, model = "np", smooth = "kernel", 
+frfast <- function(formula, data = data, na.action = "na.omit",
+                   model = "np", smooth = "kernel", 
                    h0 = -1.0, h = -1.0, 
                    nh = 30, weights = NULL, kernel = "epanech", p = 3, 
                    kbin = 100, nboot = 500, rankl = NULL, ranku = NULL, 
@@ -228,6 +250,12 @@ frfast <- function(formula, data = data, model = "np", smooth = "kernel",
     stop("Smoother not suported")
   }
   
+  if ((model == "allo") & (smooth == "splines")) {
+    smooth <- "kernel"
+    warning("The \"smooth\" argument is invalid in this context.
+    The allometric model is a parametric model.")
+  }
+  
   #if(is.null(seed)) seed <- -1
   
   if (!is.null(seed)) {
@@ -246,6 +274,9 @@ frfast <- function(formula, data = data, model = "np", smooth = "kernel",
   ncmax <- 5
   c2 <- NULL
   
+  
+  
+  
   if (smooth != "splines") {
     
     ffr <- interpret.frfastformula(formula, method = "frfast")
@@ -259,7 +290,15 @@ model specification in 'Details' of the frfast help." )
     namef <- aux[2]
     if (length(aux) == 1) {f <- NULL}else{f <- data[ ,namef]}
     newdata <- data
-    data <- na.omit(data[ ,c(ffr$response, varnames)])
+    data <- data[ ,c(ffr$response, varnames)]
+    
+    
+    if (na.action == "na.omit"){ # ver la f
+      data <- na.omit(data)
+    }else{
+      stop("The actual version of the package only supports 'na.omit' (observations are removed 
+           if they contain any missing values)")
+    }
     #newdata <- na.omit(newdata[ ,varnames])
     n <- nrow(data)
     
@@ -270,16 +309,28 @@ model specification in 'Details' of the frfast help." )
       stop("Argument \"formula\" is wrong specified, see details of
            model specification in 'Details' of the frfast help." )
     }
+    if (length(ffr$smooth.spec) == 0) {
+      warning("Argument \"formula\" could be wrong specified without an 's', see details of
+           model specification in 'Details' of the frfast help." )
+    }
     
     namef <- ffr$pred.names[2]
     if (length(ffr$pred.names) == 1) {f <- NULL}else{f <- data[ ,namef]}
     newdata <- data
+    
     if (length(ffr$pred.names) == 1) {
-      data <- na.omit(data[ ,c(ffr$response, varnames)])
+      data <- data[ ,c(ffr$response, varnames)]
     }else{
-      data <- na.omit(data[ ,c(ffr$response, varnames, namef)])
+      data <- data[ ,c(ffr$response, varnames, namef)]
     }
-    #newdata <- na.omit(newdata[ ,varnames])
+    
+    if (na.action == "na.omit"){
+      data <- na.omit(data)
+    }else{
+      stop("The actual version of the package only supports 'na.omit' (observations are removed 
+           if they contain any missing values)")
+    }
+    
     n <- nrow(data)
   }
   
@@ -347,8 +398,8 @@ model specification in 'Details' of the frfast help." )
                         n = as.integer(n),
                         h0 = as.double(h0),
                         h = as.double(h),
-                        c2 = as.integer(c2),
-                        ncmax = as.integer(ncmax),
+                        #c2 = as.integer(c2),
+                        #ncmax = as.integer(ncmax),
                         p = as.integer(p),
                         kbin = as.integer(kbin),
                         #fact = as.integer(c(1:nf)), 
@@ -385,8 +436,9 @@ model specification in 'Details' of the frfast help." )
                         predict = array(rep(-1.0), c(kbin, 3, nf)),
                         predictl = array(as.double(-1.0), c(kbin, 3, nf)),
                         predictu = array(as.double(-1.0), c(kbin, 3, nf)),
-                        seed = as.integer(seed),
-                        umatrix = as.double(umatrix)
+                        #seed = as.integer(seed),
+                        umatrix = as.double(umatrix),
+                        PACKAGE = "npregfast"
     )
     
     if (tmodel != 2) {
@@ -470,7 +522,7 @@ model specification in 'Details' of the frfast help." )
     
   }else{
     
-    mainfun <- function(formula, data, weights){
+    mainfun <- function(formula, data, weights, ...){
       
       # grid
       xgrid <- seq(min(data[ ,varnames]), max(data[ ,varnames]), length.out = kbin)
@@ -508,10 +560,10 @@ model specification in 'Details' of the frfast help." )
       aux <- data.frame(muhatfino, newdfino)
       # d1 <- by(aux, aux[, 3], function(z){D1ss(x = z[, 2], y = z[, 1])})
       d1 <- by(aux, aux[, 3], function(z){D1D2(x = z[, 2], y = z[, 1], deriv = 1)$D1})
-      pfino[, 2, 1:nf] <- unlist(d1)
+      pfino[, 2, 1:nf] <- unlist(d1[etiquetas])
       #d2 <- by(aux, aux[, 3], function(z){D2ss(x = z[, 2], y = z[, 1])$y})
       d2 <- by(aux, aux[, 3], function(z){D1D2(x = z[, 2], y = z[, 1], deriv = 2)$D2})
-      pfino[, 3, 1:nf] <- unlist(d2)
+      pfino[, 3, 1:nf] <- unlist(d2[etiquetas])
       
       
       iimax <- apply(pfino, 3:2, which.max)
@@ -558,7 +610,7 @@ model specification in 'Details' of the frfast help." )
     
     
     
-    res <- mainfun(formula, data = data, weights = weights)
+    res <- mainfun(formula, data = data, weights = weights, ...)
     
     #  for(j in 1:nf){
     #   res$max[res$max[, j] == ranku[j], j] = NA
@@ -578,7 +630,7 @@ model specification in 'Details' of the frfast help." )
     
     allboot <- foreach(i = 1:nboot) %dopar% {
       datab <- data
-      datab$DW <- yboot[, i]
+      datab[, ffr$response] <- yboot[, i]
       aux <- mainfun(formula, data = data.frame(datab, weights), 
                      weights = weights, ...)
       return(aux)

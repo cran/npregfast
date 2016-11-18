@@ -4,7 +4,8 @@
 \alias{allotest}
 \title{Bootstrap based test for testing an allometric model}
 \usage{
-allotest(formula, data = data, nboot = 500, kbin = 200, seed = NULL)
+allotest(formula, data = data, na.action = "na.omit", nboot = 500,
+  kbin = 200, seed = NULL)
 }
 \arguments{
 \item{formula}{An object of class \code{formula}: a sympbolic description
@@ -12,6 +13,9 @@ of the model to be fitted.}
 
 \item{data}{A data frame argumment or matrix containing the model response variable
 and covariates required by the \code{formula}.}
+
+\item{na.action}{A function which indicates what should happen when the 
+data contain 'NA's. The default is 'na.omit'.}
 
 \item{nboot}{Number of bootstrap repeats.}
 
@@ -36,23 +40,24 @@ loss of information,  a bootstrap-based procedure, that test whether the
 data can be modelled by an allometric model, was developed.  Therefore,
 \code{allotest} tests the null hypothesis of an allometric model taking 
 into account the logarithm of the original variable
- (\eqn{X^* = log(X)}{} and \eqn{Y^* =log (Y)}{}). 
+ (\eqn{X^* = log(X)} and \eqn{Y^* = log(Y)}). 
+ 
 Based on a general model of the type 
-\deqn{Y^*=m(X^*)+\varepsilon}{} 
+\deqn{Y^*=m(X^*)+\varepsilon}
 the aim here is to test the null hypothesis of an allometric model 
-\deqn{H_0 = m(x^*) =  a^*+ b^* x^*}{} 
-\eqn{vs.}{} the general hypothesis 
-\eqn{H_1}{}, with \eqn{m}{} 
+\deqn{H_0 = m(x^*) =  a^*+ b^* x^*}
+\eqn{vs.} the general hypothesis 
+\eqn{H_1}, with \eqn{m}
 being an unknown nonparametric function; or analogously,
-\deqn{H_1: m(x^*)= a^*+ b^* x^* + g(x^*)}{}
-with \eqn{g(x^*)}{} being an unknown function not equal to zero. 
+\deqn{H_1: m(x^*)= a^*+ b^* x^* + g(x^*)}
+with \eqn{g(x^*)} being an unknown function not equal to zero. 
 
 To implement this test we have used the wild bootstrap.
 }
 \examples{
 library(npregfast)
 data(barnacle)
-allotest(DW ~ RC, data = barnacle, nboot = 100, seed = 130853)
+allotest(DW ~ RC, data = barnacle, nboot = 50, seed = 130853)
 
 }
 \author{
