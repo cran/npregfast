@@ -4,25 +4,44 @@
 \alias{allotest}
 \title{Bootstrap based test for testing an allometric model}
 \usage{
-allotest(formula, data = data, na.action = "na.omit", nboot = 500,
-  kbin = 200, seed = NULL)
+allotest(formula, data, na.action = "na.omit", nboot = 500, seed = NULL,
+  cluster = TRUE, ncores = NULL, test = "res", ...)
 }
 \arguments{
 \item{formula}{An object of class \code{formula}: a sympbolic description
 of the model to be fitted.}
 
-\item{data}{A data frame argumment or matrix containing the model response variable
-and covariates required by the \code{formula}.}
+\item{data}{An optional data frame, matrix or list required by 
+the formula. If not found in data, the variables are taken from 
+\code{environment(formula)}, typically the environment from which
+ \code{allotest} is called.}
 
 \item{na.action}{A function which indicates what should happen when the 
 data contain 'NA's. The default is 'na.omit'.}
 
 \item{nboot}{Number of bootstrap repeats.}
 
-\item{kbin}{Number of binning nodes over which the function
-is to be estimated.}
-
 \item{seed}{Seed to be used in the bootstrap procedure.}
+
+\item{cluster}{A logical value. If  \code{TRUE} (default), the
+bootstrap procedure is  parallelized (only for \code{smooth = "splines"}).
+ Note that there are cases 
+(e.g., a low number of bootstrap repetitions) that R will gain in
+performance through serial computation. R takes time to distribute tasks
+across the processors also it will need time for binding them all together
+later on. Therefore, if the time for distributing and gathering pieces
+together is greater than the time need for single-thread computing, it does
+not worth parallelize.}
+
+\item{ncores}{An integer value specifying the number of cores to be used
+in the parallelized procedure. If \code{NULL} (default), the number of cores 
+to be used is equal to the number of cores of the machine - 1.}
+
+\item{test}{Statistic test to be used, based on residuals on the null model
+(\code{res}) or based on the likelihood ratio test 
+using rss0 and rss1 \code{lrt}.}
+
+\item{\ldots}{Other options.}
 }
 \value{
 An object is returned with the following elements:
@@ -57,11 +76,9 @@ To implement this test we have used the wild bootstrap.
 \examples{
 library(npregfast)
 data(barnacle)
-allotest(DW ~ RC, data = barnacle, nboot = 50, seed = 130853)
+allotest(DW ~ RC, data = barnacle, nboot = 50, seed = 130853, 
+cluster = FALSE)
 
-}
-\author{
-Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
 }
 \references{
 Sestelo, M. and Roca-Pardinas, J. (2011). A new approach to estimation of 
@@ -74,4 +91,6 @@ estimation and inference methods in flexible regression models.
 Applications in Biology, Engineering and Environment. PhD Thesis, Department
 of Statistics and O.R. University of Vigo.
 }
-
+\author{
+Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
+}

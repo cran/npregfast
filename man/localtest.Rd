@@ -7,15 +7,18 @@
 localtest(formula, data = data, na.action = "na.omit", der,
   smooth = "kernel", weights = NULL, nboot = 500, h0 = -1, h = -1,
   nh = 30, kernel = "epanech", p = 3, kbin = 100, rankl = NULL,
-  ranku = NULL, seed = NULL, cluster = TRUE, ncores = NULL, ...)
+  ranku = NULL, seed = NULL, cluster = TRUE, ncores = NULL,
+  ci.level = 0.95, ...)
 }
 \arguments{
 \item{formula}{An object of class \code{formula}: a sympbolic 
 description of the model to be fitted. The details of model 
 specification are given under 'Details'.}
 
-\item{data}{A data frame or matrix containing the model response variable
-and covariates required by the \code{formula}.}
+\item{data}{An optional data frame, matrix or list required by 
+the formula. If not found in data, the variables are taken from 
+\code{environment(formula)}, typically the environment from which
+ \code{localtest} is called.}
 
 \item{na.action}{A function which indicates what should happen when the 
 data contain 'NA's. The default is 'na.omit'.}
@@ -81,6 +84,8 @@ not worth parallelize.}
 \item{ncores}{An integer value specifying the number of cores to be used
 in the parallelized procedure. If \code{NULL} (default), the number of cores 
 to be used is equal to the number of cores of the machine - 1.}
+
+\item{ci.level}{Level of bootstrap confidence interval. Defaults to 0.95 (corresponding to 95\%). Note that the function accepts a vector of levels.}
 
 \item{\ldots}{Other options.}
 }
@@ -149,13 +154,12 @@ localtest(DW ~ RC : F, data = barnacle, der = 1, seed = 130853, nboot = 100)
 # der = 1, smooth = "splines") 
 
 }
-\author{
-Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
-}
 \references{
 Sestelo, M. (2013). Development and computational implementation of 
 estimation and inference methods in flexible regression models. 
 Applications in Biology, Engineering and Environment. PhD Thesis, Department
 of Statistics and O.R. University of Vigo.
 }
-
+\author{
+Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
+}

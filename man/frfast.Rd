@@ -4,7 +4,7 @@
 \alias{frfast}
 \title{Fitting nonparametric models}
 \usage{
-frfast(formula, data = data, na.action = "na.omit", model = "np",
+frfast(formula, data, na.action = "na.omit", model = "np",
   smooth = "kernel", h0 = -1, h = -1, nh = 30, weights = NULL,
   kernel = "epanech", p = 3, kbin = 100, nboot = 500, rankl = NULL,
   ranku = NULL, seed = NULL, cluster = TRUE, ncores = NULL, ...)
@@ -14,8 +14,10 @@ frfast(formula, data = data, na.action = "na.omit", model = "np",
 description of the model to be fitted. The details of model 
 specification are given under 'Details'.}
 
-\item{data}{A data frame or matrix containing the model response
-variable and covariates required by the \code{formula}.}
+\item{data}{An optional data frame, matrix or list required by 
+the formula. If not found in data, the variables are taken from 
+\code{environment(formula)}, typically the environment from which
+ \code{frfast} is called.}
 
 \item{na.action}{A function which indicates what should happen when the 
 data contain 'NA's. The default is 'na.omit'.}
@@ -227,9 +229,6 @@ summary(fit3)
 # summary(fit4)
 
 }
-\author{
-Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
-}
 \references{
 Huxley, J. S. (1924). Constant differential growth-ratios and their 
 significance. Nature, 114:895--896.
@@ -239,4 +238,6 @@ estimation and inference methods in flexible regression models.
 Applications in Biology, Engineering and Environment. PhD Thesis, Department
 of Statistics and O.R. University of Vigo.
 }
-
+\author{
+Marta Sestelo, Nora M. Villanueva and Javier Roca-Pardinas.
+}
